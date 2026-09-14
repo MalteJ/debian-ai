@@ -11,9 +11,10 @@ ENV DEBIAN_FRONTEND=noninteractive \
 #   iproute2 (ss), gawk, findutils (find), mtr-tiny, time, coreutils (timeout), expect
 # --- Agent essentials ---
 #   ripgrep, jq, yq, less, file, tree, unzip, openssh-client, procps,
-#   moreutils, tmux (non-interaktiv: -d sessions, capture-pane), make, strace,
-#   netcat-openbsd, socat, rsync. Keine Editoren — Agents editieren nicht
-#   interaktiv.
+#   moreutils, make, strace, netcat-openbsd, socat, rsync.
+#   Keine Editoren (Agents editieren nicht interaktiv), kein tmux
+#   (Hintergrund-Executen geht via nohup/& + Logfile; TTY-Automation via
+#   expect; Pause/Resume friert ohnehin die ganze VM ein).
 RUN apt-get update && apt-get install -y --no-install-recommends \
       ca-certificates \
       python3 python3-pip python3-venv \
@@ -24,7 +25,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       ripgrep jq less file tree unzip zip \
       openssh-client rsync \
       procps moreutils \
-      tmux \
       make strace \
       netcat-openbsd socat \
     && rm -rf /var/lib/apt/lists/*

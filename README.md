@@ -15,10 +15,11 @@ gepublished als `ghcr.io/maltej/debian-ai`.
 - **Text/Data:** gawk, ripgrep, jq, yq (mikefarah), less, file, tree,
   moreutils
 - **Dateien/Transfer:** unzip, zip, rsync, openssh-client
-- **Prozess/Terminal:** procps, time, timeout (coreutils), expect, tmux,
-  strace
+- **Prozess/Terminal:** procps, time, timeout (coreutils), expect, strace
 - **Build:** make
-- (keine Editoren — Agents editieren nicht interaktiv)
+- (keine Editoren — Agents editieren nicht interaktiv; kein tmux —
+  Hintergrund-Prozesse via `nohup … &` + Logfile, TTY-Automation via `expect`,
+  Pause/Resume friert ohnehin die ganze VM ein)
 
 **Bewusst NICHT enthalten:** Container-Runtimes (docker/podman) — gemountete
 Sockets und Daemon-State beißen sich mit Sandbox-Pause/Resume
