@@ -11,7 +11,9 @@ ENV DEBIAN_FRONTEND=noninteractive \
 #   iproute2 (ss), gawk, findutils (find), mtr-tiny, time, coreutils (timeout), expect
 # --- Agent essentials ---
 #   ripgrep, jq, yq, less, file, tree, unzip, openssh-client, procps,
-#   moreutils, tmux, nano, vim-tiny, make, strace, netcat-openbsd, socat, rsync
+#   moreutils, tmux (non-interaktiv: -d sessions, capture-pane), make, strace,
+#   netcat-openbsd, socat, rsync. Keine Editoren — Agents editieren nicht
+#   interaktiv.
 RUN apt-get update && apt-get install -y --no-install-recommends \
       ca-certificates \
       python3 python3-pip python3-venv \
@@ -22,11 +24,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       ripgrep jq less file tree unzip zip \
       openssh-client rsync \
       procps moreutils \
-      tmux nano vim-tiny \
+      tmux \
       make strace \
       netcat-openbsd socat \
-    && rm -rf /var/lib/apt/lists/* \
-    && ln -s /usr/bin/vim.tiny /usr/local/bin/vim
+    && rm -rf /var/lib/apt/lists/*
 
 # NOTE: bewusst KEINE Container-Runtime (docker/podman) im Image —
 # gemountete Sockets/Daemon-State beißen sich mit Sandbox-Pause/Resume

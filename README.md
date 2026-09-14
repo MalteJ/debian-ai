@@ -17,8 +17,8 @@ gepublished als `ghcr.io/maltej/debian-ai`.
 - **Dateien/Transfer:** unzip, zip, rsync, openssh-client
 - **Prozess/Terminal:** procps, time, timeout (coreutils), expect, tmux,
   strace
-- **Editoren:** nano, vim-tiny
 - **Build:** make
+- (keine Editoren — Agents editieren nicht interaktiv)
 
 **Bewusst NICHT enthalten:** Container-Runtimes (docker/podman) — gemountete
 Sockets und Daemon-State beißen sich mit Sandbox-Pause/Resume
