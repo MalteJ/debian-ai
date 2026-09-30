@@ -7,19 +7,26 @@ gepublished als `ghcr.io/maltej/debian-ai`.
 
 ## Enthaltene Tools
 
-- **Sprachen/Runtime:** python3 (+pip/venv)
+- **Sprachen/Runtime:** python3 (+pip/venv), Node.js 24 LTS (offizielles
+  Tarball, gepinnt + Checksumme; npm und corepack aktiviert) — damit ein
+  Agent einen Dev-Server in der Sandbox starten kann
 - **VCS:** git, gh (GitHub CLI)
 - **HTTP/Download:** curl, wget
 - **Netz:** dig (dnsutils), ping (iputils), ss (iproute2), mtr-tiny,
   traceroute, netcat-openbsd, socat
 - **Text/Data:** gawk, ripgrep, jq, yq (mikefarah), less, file, tree,
   moreutils
-- **Dateien/Transfer:** unzip, zip, rsync, openssh-client
+- **Dateien/Transfer:** unzip, zip, xz-utils, rsync, openssh-client
 - **Prozess/Terminal:** procps, time, timeout (coreutils), expect, strace
+- **Interaktives Terminal:** ttyd (statisches Upstream-Binary, gepinnt +
+  Checksumme) und tmux — ein Mensch kann über einen Port-Forward im Browser
+  in die Sandbox. Start:
+  `ttyd -W -O -p 7681 tmux new -A -s main`
 - **Build:** make
-- (keine Editoren — Agents editieren nicht interaktiv; kein tmux —
-  Hintergrund-Prozesse via `nohup … &` + Logfile, TTY-Automation via `expect`,
-  Pause/Resume friert ohnehin die ganze VM ein)
+- (keine Editoren — Agents editieren nicht interaktiv. Hintergrund-Prozesse
+  weiterhin via `nohup … &` + Logfile, TTY-Automation via `expect`; tmux ist
+  nur für das interaktive Terminal da, weil ttyd sein Kommando pro Verbindung
+  neu startet und die WebSocket bei Pause/Resume stirbt)
 
 **Bewusst NICHT enthalten:** Container-Runtimes (docker/podman) — gemountete
 Sockets und Daemon-State beißen sich mit Sandbox-Pause/Resume
