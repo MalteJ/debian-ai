@@ -11,7 +11,8 @@ run:
 	  -v "$$PWD":/workspace \
 	  $(IMAGE):$(TAG)
 
+# amd64 only, like the CI: the sandboxes run on x86_64 nodes.
 push:
 	docker buildx build --push \
-	  --platform linux/amd64,linux/arm64 \
+	  --platform linux/amd64 \
 	  -t $(IMAGE):$(TAG) -f Containerfile .

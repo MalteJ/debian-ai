@@ -2,8 +2,9 @@
 
 OCI-Image für AI-Coding-Agents, basierend auf `debian:13-slim`.
 
-Gebaut via GitHub Actions (public runner, multi-arch amd64+arm64) und
-gepublished als `ghcr.io/maltej/debian-ai`.
+Gebaut via GitHub Actions (public runner, nur linux/amd64 — die
+Sandboxes laufen auf x86_64-Nodes) und gepublished als
+`ghcr.io/maltej/debian-ai`.
 
 ## Enthaltene Tools
 
