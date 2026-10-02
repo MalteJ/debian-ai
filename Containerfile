@@ -85,6 +85,25 @@ RUN case "$TARGETARCH" in \
     && corepack enable \
     && node --version && npm --version
 
+# Headless-Browser: Playwright (Node) mit genau dem Chromium, auf das diese
+# Playwright-Version gepinnt ist — nur die Headless-Shell, kein volles
+# Chromium, kein Firefox/WebKit. Version gepinnt: Bibliothek und Browser
+# gehören zusammen; ein Projekt mit einer anderen Playwright-Version muss
+# sich seinen Browser selbst holen (`npx playwright install chromium`).
+# --with-deps zieht die System-Libraries und Schriften (ohne Schriften:
+# Kästchen statt Text auf Screenshots).
+# /node_modules → globale Module: Node löst require() UND import vom
+# Dateisystem-Root aus auf, damit findet jedes Skript irgendwo in der
+# Sandbox `playwright`, ohne npm install und ohne NODE_PATH (das ESM
+# ignoriert). Ein Projekt mit eigenem node_modules gewinnt, weil näher.
+ARG PLAYWRIGHT_VERSION=1.63.0
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+RUN npm install -g "playwright@${PLAYWRIGHT_VERSION}" \
+    && playwright install --with-deps --only-shell chromium \
+    && ln -s /usr/local/lib/node_modules /node_modules \
+    && rm -rf /var/lib/apt/lists/* /root/.npm /tmp/* \
+    && playwright --version
+
 LABEL org.opencontainers.image.source="https://github.com/MalteJ/debian-ai" \
       org.opencontainers.image.description="Debian 13 slim based OCI image with tooling for AI agents" \
       org.opencontainers.image.licenses="MIT"

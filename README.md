@@ -24,6 +24,16 @@ Sandboxes laufen auf x86_64-Nodes) und gepublished als
   in die Sandbox. Start:
   `ttyd -W -O -p 7681 tmux new -A -s main`
 - **Build:** make
+- **Headless-Browser:** Playwright für Node (gepinnt, `PLAYWRIGHT_VERSION`)
+  mit genau seinem Chromium, nur die Headless-Shell, unter
+  `PLAYWRIGHT_BROWSERS_PATH=/ms-playwright`; System-Libraries und
+  Schriften (inkl. CJK und Emoji) über `playwright install --with-deps`.
+  `playwright screenshot --viewport-size=1280,720 <url> shot.png` geht
+  direkt, und Skripte finden `playwright` von überall per `require` und
+  `import` (`/node_modules` zeigt auf die globalen Module). Ein Projekt
+  mit einer anderen Playwright-Version holt sich seinen Browser selbst
+  (`npx playwright install chromium`). Kostet ~630 MB Image-Größe, gut
+  200 davon Mesa/LLVM, die `libgbm` unter Debian mitbringt.
 - (keine Editoren — Agents editieren nicht interaktiv. Hintergrund-Prozesse
   weiterhin via `nohup … &` + Logfile, TTY-Automation via `expect`; tmux ist
   nur für das interaktive Terminal da, weil ttyd sein Kommando pro Verbindung
