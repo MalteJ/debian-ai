@@ -8,9 +8,17 @@ Sandboxes laufen auf x86_64-Nodes) und gepublished als
 
 ## Enthaltene Tools
 
-- **Sprachen/Runtime:** python3 (+pip/venv), Node.js 24 LTS (offizielles
-  Tarball, gepinnt + Checksumme; npm und corepack aktiviert) — damit ein
-  Agent einen Dev-Server in der Sandbox starten kann
+- **Sprachen/Runtime:** python3 (+pip/venv/python3-dev), Node.js 24 LTS
+  (offizielles Tarball, gepinnt + Checksumme; npm und corepack aktiviert)
+  — damit ein Agent einen Dev-Server in der Sandbox starten kann
+- **Go:** offizielles Tarball, gepinnt + Checksumme (`GO_VERSION`, aktuell
+  1.27.1, statt Debians 1.24); `/root/go/bin` im PATH für `go install`
+- **Rust:** über rustup (gepinnt + Checksumme, `RUSTUP_VERSION`), stabile
+  Toolchain `RUST_VERSION` (aktuell 1.99.0, statt Debians 1.85) im Profil
+  minimal + clippy + rustfmt, unter `/usr/local/{rustup,cargo}`. Eine
+  `rust-toolchain.toml` im Projekt holt ihre Version beim ersten `cargo`
+  selbst; `RUSTUP_UNPACK_RAM=100000000` hält das in 512 MiB (ohne: OOM-Kill
+  mitten im Entpacken, halbe Toolchain)
 - **VCS:** git, gh (GitHub CLI)
 - **HTTP/Download:** curl, wget
 - **Netz:** dig (dnsutils), ping (iputils), ss (iproute2), mtr-tiny,
@@ -23,7 +31,8 @@ Sandboxes laufen auf x86_64-Nodes) und gepublished als
   Checksumme) und tmux — ein Mensch kann über einen Port-Forward im Browser
   in die Sandbox. Start:
   `ttyd -W -O -p 7681 tmux new -A -s main`
-- **Build:** make
+- **Build:** make, build-essential (gcc/g++ — Linker für Rust, cgo,
+  native Erweiterungen für pip und node-gyp)
 - **Headless-Browser:** Playwright für Node (gepinnt, `PLAYWRIGHT_VERSION`)
   mit genau seinem Chromium, nur die Headless-Shell, unter
   `PLAYWRIGHT_BROWSERS_PATH=/ms-playwright`; System-Libraries und

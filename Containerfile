@@ -14,6 +14,12 @@ ENV DEBIAN_FRONTEND=noninteractive \
 #   ripgrep, jq, yq, less, file, tree, unzip, openssh-client, procps,
 #   moreutils, make, strace, netcat-openbsd, socat, rsync.
 #   Keine Editoren (Agents editieren nicht interaktiv).
+# --- Compiler ---
+#   build-essential (gcc, g++, libc-Header): Linker für Rust, cgo für Go,
+#   native Erweiterungen bei pip und node-gyp, wenn es kein fertiges
+#   Binary gibt. python3-dev dazu: ohne Python.h baut pip eine native
+#   Erweiterung nicht, und viele Pakete fallen dann STILL auf ihre reine
+#   Python-Variante zurück.
 # --- Interaktives Terminal ---
 #   ttyd + tmux, damit ein Mensch über den Browser in die Sandbox kann
 #   (FeCode-Previews: Port-Forward auf ttyd).
@@ -23,7 +29,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
 #   Reconnect eine frische Shell statt der Sitzung, die man verlassen hat.
 RUN apt-get update && apt-get install -y --no-install-recommends \
       ca-certificates \
-      python3 python3-pip python3-venv \
+      python3 python3-pip python3-venv python3-dev \
       git gh \
       curl wget \
       dnsutils iputils-ping iproute2 mtr-tiny traceroute \
@@ -32,6 +38,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       openssh-client rsync \
       procps moreutils \
       make strace \
+      build-essential \
       netcat-openbsd socat \
       tmux \
     && rm -rf /var/lib/apt/lists/*
@@ -84,6 +91,53 @@ RUN case "$TARGETARCH" in \
     && rm /tmp/node.tar.xz \
     && corepack enable \
     && node --version && npm --version
+
+# Go — offizielles Tarball, Version gepinnt, Checksumme geprüft (Debian
+# trixie hat 1.24, wir wollen das aktuelle Release). GOPATH bleibt der
+# Default /root/go; dessen bin/ steht im PATH, damit `go install`-Tools
+# direkt aufrufbar sind.
+ARG GO_VERSION=1.27.1
+RUN case "$TARGETARCH" in \
+      amd64) GO_SHA=63d339f0da5ab53635a56f2490a7984dfe12dfcff22ad749f63edaf590168445 ;; \
+      arm64) GO_SHA=3450b45a3f9ee8568792736a5c5e70a1f2e9b36c35a8f74958c03e51d7d92bec ;; \
+      *) echo "unsupported arch: $TARGETARCH" >&2; exit 1 ;; \
+    esac \
+    && curl -fsSL "https://go.dev/dl/go${GO_VERSION}.linux-${TARGETARCH}.tar.gz" -o /tmp/go.tar.gz \
+    && echo "${GO_SHA}  /tmp/go.tar.gz" | sha256sum -c - \
+    && tar -xzf /tmp/go.tar.gz -C /usr/local \
+    && rm /tmp/go.tar.gz
+ENV PATH=/usr/local/go/bin:/root/go/bin:$PATH
+RUN go version
+
+# Rust — über rustup, nicht das Debian-Paket: trixie hat rustc 1.85, viele
+# aktuelle Crates verlangen mehr, und nur rustup respektiert die
+# rust-toolchain.toml eines Projekts (holt die Version beim ersten cargo
+# selbst). Aufbau wie im offiziellen rust-Image: rustup-init gepinnt +
+# Checksumme, eine feste stabile Toolchain im Profil minimal plus clippy
+# und rustfmt, RUSTUP_HOME/CARGO_HOME unter /usr/local.
+# RUSTUP_UNPACK_RAM: rustup puffert beim Entpacken einer Toolchain bis zu
+# 500 MiB — in einer Sandbox mit 512 MiB hat der OOM-Killer das Nachladen
+# aus einer rust-toolchain.toml mittendrin beendet und eine halbe
+# Toolchain hinterlassen. Mit 100 MB: 1.98.0 in ~16 s, maxrss ~210 MB.
+ARG RUSTUP_VERSION=1.29.1
+ARG RUST_VERSION=1.99.0
+ENV RUSTUP_HOME=/usr/local/rustup \
+    CARGO_HOME=/usr/local/cargo \
+    RUSTUP_UNPACK_RAM=100000000 \
+    PATH=/usr/local/cargo/bin:$PATH
+RUN case "$TARGETARCH" in \
+      amd64) RUST_ARCH=x86_64-unknown-linux-gnu;  RUSTUP_SHA=dda7234360b7f578ca8b0ddcb80145646fa61a67c1720a5abc7051b35c9fcb71 ;; \
+      arm64) RUST_ARCH=aarch64-unknown-linux-gnu; RUSTUP_SHA=15f6e4ce9f583b929c996c91562bad6d4454f3281de858b02cdfdef615fac433 ;; \
+      *) echo "unsupported arch: $TARGETARCH" >&2; exit 1 ;; \
+    esac \
+    && curl -fsSL "https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/${RUST_ARCH}/rustup-init" \
+       -o /tmp/rustup-init \
+    && echo "${RUSTUP_SHA}  /tmp/rustup-init" | sha256sum -c - \
+    && chmod +x /tmp/rustup-init \
+    && /tmp/rustup-init -y --no-modify-path --profile minimal \
+         --default-toolchain "${RUST_VERSION}" --component clippy,rustfmt \
+    && rm /tmp/rustup-init \
+    && rustup --version && cargo --version && rustc --version
 
 # Headless-Browser: Playwright (Node) mit genau dem Chromium, auf das diese
 # Playwright-Version gepinnt ist — nur die Headless-Shell, kein volles
